@@ -3,15 +3,22 @@ import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 export default function SignupPage() {
+  const router = useRouter();
   const [user, setUser] = React.useState({
     email: "",
     password: "",
     username: "",
   });
+  console.log(user);
 
-  async function onSignup() {}
+  async function onSignup() {
+    const res = await axios.post("/api/users/signup", user);
+    console.log(res);
+    router.push("/login");
+  }
 
   return (
     <div className='flex flex-col justify-center items-center h-screen'>
@@ -39,7 +46,7 @@ export default function SignupPage() {
         name='password'
         id='password'
         placeholder='Enter Your Password!'
-        type='text'
+        type='password'
         onChange={(e) => setUser({ ...user, password: e.target.value })}
       />
       <button
