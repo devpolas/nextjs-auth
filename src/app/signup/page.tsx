@@ -12,51 +12,83 @@ export default function SignupPage() {
     password: "",
     username: "",
   });
-  console.log(user);
+  const [loading, setLoading] = React.useState(false);
+  const [disabled, setDisabled] = React.useState(true);
+
+  React.useEffect(() => {
+    if (
+      user.email.length > 0 &&
+      user.password.length > 0 &&
+      user.username.length > 0
+    ) {
+      setDisabled(false);
+    }
+  }, [user]);
 
   async function onSignup() {
-    const res = await axios.post("/api/users/signup", user);
-    console.log(res);
-    router.push("/login");
+    setLoading(true);
+    try {
+      await axios.post("/api/users/signup", user);
+      router.push("/login");
+      setLoading(false);
+      toast.success("Account created successfully! Please login.");
+    } catch (error: unknown) {
+      setLoading(false);
+      if (error instanceof Error) {
+        console.log("Error during signup:", error.message);
+      } else {
+        console.log("An unexpected error occurred during signup.");
+      }
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
     <div className='flex flex-col justify-center items-center h-screen'>
-      <label htmlFor='username'>Username</label>
-      <input
-        className='p-2'
-        name='username'
-        id='username'
-        placeholder='username'
-        type='text'
-        onChange={(e) => setUser({ ...user, username: e.target.value })}
-      />
-      <label htmlFor='email'>Email</label>
-      <input
-        className='p-2'
-        name='email'
-        id='email'
-        placeholder='Enter Your Email!'
-        type='text'
-        onChange={(e) => setUser({ ...user, email: e.target.value })}
-      />
-      <label htmlFor='password'>Password</label>
-      <input
-        className='p-2'
-        name='password'
-        id='password'
-        placeholder='Enter Your Password!'
-        type='password'
-        onChange={(e) => setUser({ ...user, password: e.target.value })}
-      />
-      <button
-        className='p-2 border-2 border-red-100 rounded-md hover:cursor-pointer'
-        onClick={() => onSignup()}
-      >
-        Submit
-      </button>
+      <fieldset className='bg-base-200 p-4 border border-base-300 rounded-box w-xs fieldset'>
+        <legend className='fieldset-legend'>
+          {loading ? "Processing..." : "Signup"}
+        </legend>
 
-      <Link href='/login'>Already have an account? Login</Link>
+        <label className='label'>Username</label>
+        <input
+          type='text'
+          onChange={(e) => setUser({ ...user, username: e.target.value })}
+          className='outline-none focus:outline-none focus:ring-0 input'
+          placeholder='username'
+        />
+
+        <label className='label'>Email</label>
+        <input
+          type='email'
+          onChange={(e) => setUser({ ...user, email: e.target.value })}
+          className='outline-none focus:outline-none focus:ring-0 input'
+          placeholder='Email'
+        />
+
+        <label className='label'>Password</label>
+        <input
+          type='password'
+          onChange={(e) => setUser({ ...user, password: e.target.value })}
+          className='outline-none focus:outline-none focus:ring-0 input'
+          placeholder='Password'
+        />
+
+        <button
+          disabled={disabled}
+          onClick={() => onSignup()}
+          className='mt-4 btn btn-neutral'
+        >
+          Signup
+        </button>
+        <p className='p-2 text-white text-sm text-center'>
+          Already have an account?{" "}
+          <Link className='font-semibold text-green-600' href='/login'>
+            Login
+          </Link>
+        </p>
+      </fieldset>
     </div>
   );
 }
