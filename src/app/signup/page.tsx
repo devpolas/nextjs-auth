@@ -30,7 +30,6 @@ export default function SignupPage() {
     try {
       await axios.post("/api/users/signup", user);
       router.push("/login");
-      setLoading(false);
       toast.success("Account created successfully! Please login.");
     } catch (error: unknown) {
       setLoading(false);
