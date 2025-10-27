@@ -1,0 +1,8 @@
+MONGO_URI = mongodb_url
+
+TOKEN_SECRET = nextjsblogsecret
+JWT_EXPIRES_IN = 1d
+DOMAIN=http://localhost:3000
+
+
+
