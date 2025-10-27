@@ -5,4 +5,7 @@ JWT_EXPIRES_IN = 1d
 DOMAIN=http://localhost:3000
 
 
-
+MAILTRAP_HOST = sender host
+MAILTRAP_PORT = port
+MAILTRAP_USER = userid
+MAILTRAP_PASSWORD = *************
