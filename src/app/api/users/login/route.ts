@@ -1,59 +1,53 @@
-import User from "@/models/userModal";
-import bcrypt from "bcryptjs";
+import {connect} from "@/dbConfig/dbConfig";
+import User from "@/models/userModel";
 import { NextRequest, NextResponse } from "next/server";
+import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
-import dbConnection from "@/dbConfig/dbConfig";
 
-dbConnection();
-export async function POST(req: NextRequest) {
-  try {
-    const reqBody = await req.json();
-    const { email, password } = reqBody;
+connect()
 
-    // user not exits
-    const user = await User.findOne({ email });
-    if (!user) {
-      return NextResponse.json(
-        { message: "User does not exist!" },
-        { status: 404 }
-      );
-    }
-    // check password
-    const isPasswordCorrect = await bcrypt.compare(password, user.password);
-    if (!isPasswordCorrect) {
-      return NextResponse.json(
-        { message: "Invalid credentials!" },
-        { status: 401 }
-      );
-    }
+export async function POST(request: NextRequest){
+    try {
 
-    // generate session or token here
-    const tokenData = {
-      id: user._id,
-      email: user.email,
-    };
-    const loginToken = await jwt.sign({ tokenData }, process.env.JWT_SECRET!, {
-      expiresIn: "1d",
-    });
-    const response = NextResponse.json(
-      {
-        message: "Login successful!",
-        success: true,
-      },
-      { status: 200 }
-    );
-    response.cookies.set("loginToken", loginToken, {
-      httpOnly: true,
-    });
-    return response;
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      return NextResponse.json({ message: error.message }, { status: 500 });
-    } else {
-      return NextResponse.json(
-        { message: "An error occurred!" },
-        { status: 500 }
-      );
+        const reqBody = await request.json()
+        const {email, password} = reqBody;
+        console.log(reqBody);
+
+        //check if user exists
+        const user = await User.findOne({email})
+        if(!user){
+            return NextResponse.json({error: "User does not exist"}, {status: 400})
+        }
+        console.log("user exists");
+        
+        
+        //check if password is correct
+        const validPassword = await bcryptjs.compare(password, user.password)
+        if(!validPassword){
+            return NextResponse.json({error: "Invalid password"}, {status: 400})
+        }
+        console.log(user);
+        
+        //create token data
+        const tokenData = {
+            id: user._id,
+            username: user.username,
+            email: user.email
+        }
+        //create token
+        const token = await jwt.sign(tokenData, process.env.TOKEN_SECRET!, {expiresIn: "1d"})
+
+        const response = NextResponse.json({
+            message: "Login successful",
+            success: true,
+        })
+        response.cookies.set("token", token, {
+            httpOnly: true, 
+            
+        })
+        return response;
+
+    } catch (error: any) {
+        return NextResponse.json({error: error.message}, {status: 500})
     }
-  }
 }
